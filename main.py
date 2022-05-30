@@ -1,5 +1,4 @@
 import pygame
-
 """A simple sudoku puzzle generator and solver with backtracking. 
     Requires Pygame."""
 
@@ -39,18 +38,21 @@ adj = screenWidth / 9
 num = 0
 
 
+# Give coordinates in terms of boxes
 def updateCoords(pos):
     global x, y
     x = pos[0] // adj
     y = pos[1] // adj
 
 
+# Highlight the current selected box
 def highlightBox():
     for i in range(2):
         pygame.draw.line(screen, hoverColor, (x * adj - 3, (y + i) * adj), (x * adj + adj + 3, (y + i) * adj), 7)
         pygame.draw.line(screen, hoverColor, ((x + i) * adj, y * adj), ((x + i) * adj, y * adj + adj), 7)
 
 
+# Update the visuals to the current board
 def setBoard():
     for row in range(9):
         for col in range(9):
@@ -64,11 +66,13 @@ def setBoard():
         pygame.draw.line(screen, (0, 0, 0,), (i * adj, 0), (i * adj, 500), thickness)
 
 
+# Set a number on the board
 def setNum(num):
     numToPlace = numFont.render(str(num), 1, zeroColor)
     screen.blit(numToPlace, (x * adj + 15, y * adj + 15))
 
 
+# Returns whether a placement is valid by Sudoku rules
 def validPlacement(board, xIndex, yIndex, num):
     for i in range(9):
         if board[xIndex][i] == num or board[i][yIndex] == num:
@@ -81,6 +85,8 @@ def validPlacement(board, xIndex, yIndex, num):
     return True
 
 
+# Iterates through empty spaces and recursively tries all valid placements.
+# Handles cells with no valid placements by backtracking
 def solve(board, row, col):
     while board[row][col] != 0:
         if row < 8:
@@ -114,33 +120,34 @@ def solve(board, row, col):
     return False
 
 
+# Throws an error for an invalid placement
 def errorInvalid():
     text = numFont.render("Invalid Placement", 1, zeroColor)
     screen.blit(text, (20, 570))
 
+
+# Throws an error for an incorrect board
 def errorIncorrect():
     text = numFont.render("Incorrect", 1, zeroColor)
     screen.blit(text, (20, 570))
 
 
+# Displays instructions under the board
 def instructions():
     textReset = textFont.render("Press R to reset the board", 1, zeroColor)
+    textClear = textFont.render("Press C to clear the board", 1, zeroColor)
     textSolve = textFont.render("Press Enter to auto-solve", 1, zeroColor)
-    screen.blit(textReset, (20, 520))
-    screen.blit(textSolve, (20, 540))
-
-
-def finished():
-    textSolved = textFont.render("Solved! Press R to reset", 1, zeroColor)
-    screen.blit(textSolved, (20, 570))
+    screen.blit(textReset, (20, 510))
+    screen.blit(textClear, (20, 535))
+    screen.blit(textSolve, (20, 560))
 
 
 run = True
 flag1 = 0
 flag2 = 0
-rs = 0
 error = 0
 
+# Main game loop
 while run:
     screen.fill(backgroundColor)
 
@@ -186,7 +193,6 @@ while run:
                 case pygame.K_RETURN:
                     flag2 = 1
                 case pygame.K_r:
-                    rs = 0
                     error = 0
                     flag2 = 0
                     board = [
@@ -200,11 +206,21 @@ while run:
                         [0, 0, 0, 6, 0, 8, 5, 9, 0],
                         [0, 0, 0, 0, 7, 1, 0, 4, 0]
                     ]
+                case pygame.K_c:
+                    board = [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    ]
     if flag2 == 1:
-        if solve(board, 0, 0) == False:
+        if not solve(board, 0, 0):
             error = 1
-        else:
-            rs = 1
         flag2 = 0
     if num != 0:
         setNum(num)
@@ -215,11 +231,8 @@ while run:
             board[int(x)][int(y)] = 0
             errorInvalid()
         num = 0
-
     if error == 1:
         errorIncorrect()
-    if rs == 1:
-        finished()
     setBoard()
     if flag1 == 1:
         highlightBox()
